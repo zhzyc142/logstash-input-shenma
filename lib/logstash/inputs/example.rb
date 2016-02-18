@@ -84,6 +84,7 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
   end # def register
 
   def run(queue)
+    @logger.error("run action #{queue}")
     @logger.info("run action:")
     @logger.info(queue)
     if @schedule
@@ -110,11 +111,13 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
 
   def execute_query(queue)
     @logger.info("execute_query action:")
+    @logger.error("execute_query action #{queue}")
     # update default parameters
     @parameters['sql_last_value'] = @sql_last_value
     execute_statement(@statement, @parameters) do |row|
       @logger.info("execute_query callback action:")
       @logger.info(row)
+      @logger.error("execute_query action #{row}")
       event = LogStash::Event.new(row)
       decorate(event)
       queue << event
