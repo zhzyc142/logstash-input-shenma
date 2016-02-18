@@ -20,6 +20,8 @@ module LogStash::PluginMixins::Example
 
   public
   def setup_jdbc_config
+    config :jdbc_ecs_host, :validate => :string, :default=>"http://localhost:9200/"
+
     # JDBC driver library path to third party driver library. In case of multiple libraries being
     # required you can pass them separated by a comma.
     #

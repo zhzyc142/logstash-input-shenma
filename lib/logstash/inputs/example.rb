@@ -110,18 +110,67 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
   private
 
   def execute_query(queue)
-    @logger.info("execute_query action:")
     @logger.error("execute_query action #{queue}")
     # update default parameters
     @parameters['sql_last_value'] = @sql_last_value
     execute_statement(@statement, @parameters) do |row|
-      @logger.info("execute_query callback action:")
-      @logger.info(row)
-      @logger.error("execute_query action #{row}")
+      @logger.error("execute_query callback action #{row}")
+
+      is_login?(row["userid"])
       event = LogStash::Event.new(row)
       decorate(event)
       queue << event
     end
+  end
+
+  def is_login?(user_id, time_begin, time_end)
+    client = Elasticsearch::Client.new(:host => @jdbc_ecs_host)
+    query = {
+      "size"=> 0,
+      "query"=> {
+        "bool"=> {
+          "must"=> [
+            {
+              "term"=> {
+                "userLevel"=> {
+                  "value"=> 4
+                }
+              }
+            },
+            {
+              "range"=> {
+                "visitDate"=> {
+                  "gte"=> time_begin
+                }
+              }
+            },
+            {
+              "range"=> {
+                "visitDate"=> {
+                  "lte"=> time_end
+                }
+              }
+            },
+            {
+              "terms"=> {
+                "userId"=> [ user_id ]
+              }
+            }
+          ]
+        }
+      },
+      "aggs"=> {
+        "stat_user"=> {
+          "terms"=> {
+            "field"=> "userId",
+            "size"=> 1000
+          }
+        }
+      }
+    }
+    res = client.search({body: query, index: "esmapping"})
+    @logger.error("ecs result #{res}")
+    res
   end
 
   def update_state_file
