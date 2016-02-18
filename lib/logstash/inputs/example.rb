@@ -84,6 +84,8 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
   end # def register
 
   def run(queue)
+    @logger.info("run action:")
+    @logger.info(queue.to_json)
     if @schedule
       @scheduler = Rufus::Scheduler.new(:max_work_threads => 1)
       @scheduler.cron @schedule do
@@ -107,10 +109,12 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
   private
 
   def execute_query(queue)
+    @logger.info("execute_query action:")
     # update default parameters
     @parameters['sql_last_value'] = @sql_last_value
     execute_statement(@statement, @parameters) do |row|
-      @logger.debug("row", statement: row)
+      @logger.info("execute_query callback action:")
+      @logger.info(row.to_json)
       event = LogStash::Event.new(row)
       decorate(event)
       queue << event
