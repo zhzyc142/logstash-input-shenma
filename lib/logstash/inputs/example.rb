@@ -117,7 +117,7 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
 
       @logger.error("execute_query callback action #{row}")
       if(row["userid"] && row["userid"]!=0)
-        is_login?(row["userid"], "2015-01-10T19:25:42.6063412+08:00", "2017-01-10T19:25:42.6063412+08:00")
+        row["isLogin"] = is_login?(row["userid"], "2015-01-10T19:25:42.6063412+08:00", "2017-01-10T19:25:42.6063412+08:00")
         event = LogStash::Event.new(row)
         decorate(event)
         queue << event
@@ -172,7 +172,12 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
     }
     res = client.search({body: query, index: "esmapping"})
     @logger.error("ecs result #{res}")
-    res
+
+    if(res["hits"] && res["hits"]["total"] && res["hits"]["total"]> 0)
+      return "是"
+    else
+      return "否"
+    end
   end
 
   def update_state_file
