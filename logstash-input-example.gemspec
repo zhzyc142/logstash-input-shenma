@@ -18,8 +18,20 @@ Gem::Specification.new do |s|
   s.metadata = { "logstash_plugin" => "true", "logstash_group" => "input" }
 
   # Gem dependencies
-  s.add_runtime_dependency "logstash-core", ">= 2.0.0", "< 3.0.0"
-  s.add_runtime_dependency 'logstash-codec-plain'
+  # s.add_runtime_dependency "logstash-core", ">= 2.0.0", "< 3.0.0"
+  # s.add_runtime_dependency 'logstash-codec-plain'
   s.add_runtime_dependency 'stud', '>= 0.0.22'
-  s.add_development_dependency 'logstash-devutils', '>= 0.0.16'
+  # s.add_development_dependency 'logstash-devutils', '>= 0.0.16'
+  
+  s.add_runtime_dependency "logstash-core", ">= 2.0.0.beta2", "< 3.0.0"
+  s.add_runtime_dependency 'logstash-codec-plain'
+  s.add_runtime_dependency 'sequel'
+  s.add_runtime_dependency 'tzinfo'
+  s.add_runtime_dependency 'tzinfo-data'
+  s.add_runtime_dependency 'rufus-scheduler'
+
+  s.add_development_dependency 'logstash-devutils'
+  s.add_development_dependency 'timecop'
+  s.add_development_dependency 'jdbc-derby'
+  s.add_development_dependency 'docker-api'
 end
