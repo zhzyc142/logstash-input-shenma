@@ -255,4 +255,3 @@ module LogStash::PluginMixins::Example
     end
   end
 end
-Status API Training Shop Blog About Pricing
