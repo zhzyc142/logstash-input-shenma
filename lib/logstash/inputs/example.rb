@@ -110,6 +110,7 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
     # update default parameters
     @parameters['sql_last_value'] = @sql_last_value
     execute_statement(@statement, @parameters) do |row|
+      @logger.debug("row", statement: row)
       event = LogStash::Event.new(row)
       decorate(event)
       queue << event
