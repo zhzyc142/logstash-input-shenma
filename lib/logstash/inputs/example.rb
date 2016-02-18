@@ -117,7 +117,7 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
 
       @logger.error("execute_query callback action #{row}")
       if(row["userid"] && row["userid"]!=0)
-        is_login?(row["userid"])
+        is_login?(row["userid"], "2015-01-10T19:25:42.6063412+08:00", "2017-01-10T19:25:42.6063412+08:00")
         event = LogStash::Event.new(row)
         decorate(event)
         queue << event
