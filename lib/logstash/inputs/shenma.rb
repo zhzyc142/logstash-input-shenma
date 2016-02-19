@@ -119,7 +119,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     time_begin = (Date.today()-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
     time_end = Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
 
-    execute_statement(buyer_everyday_data_sql(time_begin, time_end), @parameters) do |row|
+    execute_statement(buyer_everyday_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
       if(row["userid"] && row["userid"]!=0)
         row["isLogin"] = is_login?(row["userid"], time_begin, time_end)
         row["sendMessage"] = buyer_send_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
