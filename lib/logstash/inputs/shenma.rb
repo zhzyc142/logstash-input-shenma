@@ -124,6 +124,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["isLogin"] = is_login?(row["userid"], time_begin, time_end)
         row["sendMessage"] = buyer_send_message_number(row["userid"], time_begin.to_time.utc,  time_end.to_time.utc)
         row["receivedMessage"] = buyer_received_message_number(row["userid"], time_begin.to_time.utc,  time_end.to_time.utc)
+        row["statisticaldate"] = Date.parse(time_begin)
         event = LogStash::Event.new(row)
         decorate(event)
         queue << event
