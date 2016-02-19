@@ -1,15 +1,15 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "logstash/plugin_mixins/example"
+require "logstash/plugin_mixins/shenma"
 require "yaml" # persistence
 require "mongo"
 
 include Mongo
 
-class LogStash::Inputs::Example < LogStash::Inputs::Base
-  include LogStash::PluginMixins::Example
-  config_name "example"
+class LogStash::Inputs::Shenma < LogStash::Inputs::Base
+  include LogStash::PluginMixins::Shenma
+  config_name "shenma"
 
   # If undefined, Logstash will complain, even if codec is unused.
   default :codec, "plain"

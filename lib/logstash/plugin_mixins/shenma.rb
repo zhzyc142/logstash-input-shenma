@@ -6,7 +6,7 @@ require "date"
 
 # Tentative of abstracting JDBC logic to a mixin
 # for potential reuse in other plugins (input/output)
-module LogStash::PluginMixins::Example
+module LogStash::PluginMixins::Shenma
 
   @logger = Cabin::Channel.get(LogStash)
 
