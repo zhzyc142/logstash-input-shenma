@@ -36,7 +36,7 @@ module LogStash::PluginMixins::ShenmaSql
       JOIN ims_associateincomehistory ON `order`.OrderNo = ims_associateincomehistory.SourceNo
       WHERE
         ims_associateincomehistory.AssociateUserId = ims_associate.UserId
-      AND `order`.`Status` > 0 and `order`.CreateDate < #{time_end} and `order`.CreateDate >= #{time_begin}
+      AND `order`.`Status` > 0 and `order`.CreateDate < '#{time_end}' and `order`.CreateDate >= '#{time_begin}'
     ) AS orderAmount,
     (
       SELECT
@@ -46,7 +46,7 @@ module LogStash::PluginMixins::ShenmaSql
       JOIN ims_associateincomehistory ON `order`.OrderNo = ims_associateincomehistory.SourceNo
       WHERE
         ims_associateincomehistory.AssociateUserId = ims_associate.UserId
-      AND `order`.`Status` > 0  and `order`.CreateDate < #{time_end} and `order`.CreateDate >= #{time_begin}
+      AND `order`.`Status` > 0  and `order`.CreateDate < '#{time_end}' and `order`.CreateDate >= '#{time_begin}'
     ) AS orderRecivedAmount,
     (
       SELECT
