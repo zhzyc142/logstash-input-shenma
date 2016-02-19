@@ -3,9 +3,9 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/plugin_mixins/shenma"
 require "yaml" # persistence
-require "mongo"
+# require "mongo"
 
-include Mongo
+# include Mongo
 
 class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   include LogStash::PluginMixins::Shenma
