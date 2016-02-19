@@ -124,8 +124,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["isLogin"] = is_login?(row["userid"], time_begin, time_end)
         row["sendMessage"] = buyer_send_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
         row["receivedMessage"] = buyer_received_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
-        row["time_begin"] = Time.parse(time_begin)
-        row["time_end"] = Time.parse(time_end)
+        row["time_begin"] = Date.parse(time_begin).to_s
+        row["time_end"] = Date.parse(time_end).to_s
         row["orderamount"] = row["orderamount"].to_f
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
         event = LogStash::Event.new(row)
