@@ -2,6 +2,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/plugin_mixins/shenma"
+require "logstash/plugin_mixins/shenma_sql"
 require "yaml" # persistence
 require "mongo"
 
@@ -9,6 +10,7 @@ include Mongo
 
 class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   include LogStash::PluginMixins::Shenma
+  include LogStash::PluginMixins::ShenmaSql
   config_name "shenma"
 
   # If undefined, Logstash will complain, even if codec is unused.
@@ -113,16 +115,15 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   private
 
   def execute_query(queue)
-    @logger.error("execute_query action #{queue}")
-    # update default parameters
     @parameters['sql_last_value'] = @sql_last_value
-    execute_statement(@statement, @parameters) do |row|
+    time_begin = (Date.today()-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    time_end = Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
 
-      @logger.error("execute_query callback action #{row}")
+    execute_statement(buyer_everyday_data_sql(time_begin, time_end), @parameters) do |row|
       if(row["userid"] && row["userid"]!=0)
-        row["isLogin"] = is_login?(row["userid"], (Date.today()-1).to_time.strftime("%Y-%m-%dT%H:%M:%S"),  Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S"))
-        row["sendMessage"] = buyer_send_message_number(row["userid"], (Date.today()-1).to_time.utc,  Date.today().to_time.utc)
-        row["receivedMessage"] = buyer_received_message_number(row["userid"], (Date.today()-1).to_time.utc,  Date.today().to_time.utc)
+        row["isLogin"] = is_login?(row["userid"], time_begin, time_end)
+        row["sendMessage"] = buyer_send_message_number(row["userid"], time_begin.to_time.utc,  time_end.to_time.utc)
+        row["receivedMessage"] = buyer_received_message_number(row["userid"], time_begin.to_time.utc,  time_end.to_time.utc)
         event = LogStash::Event.new(row)
         decorate(event)
         queue << event
