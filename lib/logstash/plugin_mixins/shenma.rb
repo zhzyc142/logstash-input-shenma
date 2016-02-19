@@ -22,6 +22,8 @@ module LogStash::PluginMixins::Shenma
   def setup_jdbc_config
     config :jdbc_ecs_host, :validate => :string, :default=>"http://localhost:9200/"
 
+    config :mongo_conn_uri, :validate => :string, :default=>"mongodb://Mhdev:Mhdev_123@182.92.7.70:27017/chatserver"
+
     # JDBC driver library path to third party driver library. In case of multiple libraries being
     # required you can pass them separated by a comma.
     #
@@ -99,6 +101,18 @@ module LogStash::PluginMixins::Shenma
       :password => @jdbc_password.nil? ? nil : @jdbc_password.value,
       :pool_timeout => @jdbc_pool_timeout
     }.merge(@sequel_opts)
+    
+    begin
+      if @mongo_conn_uri
+        @mongo_conn = Mongo::Client.new(@mongo_conn_uri)
+      else
+        @mongo_conn = nil
+      end
+    rescue Exception => e
+      @logger.error("Unable to connect to mongo database")
+      raise e
+    end
+    
     begin
       Sequel.connect(@jdbc_connection_string, opts=opts)
     rescue Sequel::PoolTimeout => e

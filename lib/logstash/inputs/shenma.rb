@@ -120,7 +120,9 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
       @logger.error("execute_query callback action #{row}")
       if(row["userid"] && row["userid"]!=0)
-        row["isLogin"] = is_login?(row["userid"], "2015-01-10T19:25:42.6063412+08:00", "2017-01-10T19:25:42.6063412+08:00")
+        row["isLogin"] = is_login?(row["userid"], (Date.today()-1).utc,  Date.today().utc)
+        row["sendMessage"] = buyer_send_message_number(row["userid"], (Date.today()-1).to_time,  Date.today().to_time)
+        row["receivedMessage"] = buyer_received_message_number(row["userid"], (Date.today()-1).to_time,  Date.today().to_time)
         event = LogStash::Event.new(row)
         decorate(event)
         queue << event
@@ -128,14 +130,19 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     end
   end
 
-  def message_number(user_id, day)
+  def buyer_received_message_number(user_id, time_begin, time_end)
+    # conn = Mongo::Client.new("mongodb://Mhdev:Mhdev_123@182.92.7.70:27017/chatserver")
+    @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "toUserId"=> user_id.to_i ).to_a.size
+  end
+
+  def buyer_send_message_number(user_id, time_begin, time_end)
     # "username": "Mhdev",
     #   "password": "Mhdev_123",
     #   "host":"10.165.68.116",
     #   "port":"27017",
     #   "dbname":"chatserver"
-    conn = Mongo::Client.new("mongodb://Mhdev:Mhdev_123@10.165.68.116:27017/chatserver?ssl=true")
-    conn[:messages].find( "creationDate" => {'$gt'=> (Date.today()-1000).to_time.utc}, "toUserId"=> 4852 ).to_a.size
+    # conn = Mongo::Client.new("mongodb://Mhdev:Mhdev_123@182.92.7.70:27017/chatserver")
+    @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "fromUserId"=> user_id.to_i ).to_a.size
   end
 
   def is_login?(user_id, time_begin, time_end)
