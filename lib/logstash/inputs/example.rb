@@ -3,6 +3,9 @@ require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/plugin_mixins/example"
 require "yaml" # persistence
+require "mongo"
+
+include Mongo
 
 class LogStash::Inputs::Example < LogStash::Inputs::Base
   include LogStash::PluginMixins::Example
@@ -123,6 +126,16 @@ class LogStash::Inputs::Example < LogStash::Inputs::Base
         queue << event
       end
     end
+  end
+
+  def message_number(user_id, day)
+    # "username": "Mhdev",
+    #   "password": "Mhdev_123",
+    #   "host":"10.165.68.116",
+    #   "port":"27017",
+    #   "dbname":"chatserver"
+    conn = Mongo::Client.new("mongodb://Mhdev:Mhdev_123@10.165.68.116:27017/chatserver?ssl=true")
+    conn[:messages].find( "creationDate" => {'$gt'=> (Date.today()-1000).to_time.utc}, "toUserId"=> 4852 ).to_a.size
   end
 
   def is_login?(user_id, time_begin, time_end)
