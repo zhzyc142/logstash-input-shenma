@@ -120,9 +120,9 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
       @logger.error("execute_query callback action #{row}")
       if(row["userid"] && row["userid"]!=0)
-        row["isLogin"] = is_login?(row["userid"], (Date.today()-1).to_time,  Date.today().to_time)
-        row["sendMessage"] = buyer_send_message_number(row["userid"], (Date.today()-1).to_time,  Date.today().to_time)
-        row["receivedMessage"] = buyer_received_message_number(row["userid"], (Date.today()-1).to_time,  Date.today().to_time)
+        row["isLogin"] = is_login?(row["userid"], (Date.today()-1).to_time.utc,  Date.today().to_time.utc)
+        row["sendMessage"] = buyer_send_message_number(row["userid"], (Date.today()-1).to_time.utc,  Date.today().to_time.utc)
+        row["receivedMessage"] = buyer_received_message_number(row["userid"], (Date.today()-1).to_time.utc,  Date.today().to_time.utc)
         event = LogStash::Event.new(row)
         decorate(event)
         queue << event
