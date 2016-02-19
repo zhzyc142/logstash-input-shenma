@@ -122,8 +122,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     execute_statement(buyer_everyday_data_sql(time_begin, time_end), @parameters) do |row|
       if(row["userid"] && row["userid"]!=0)
         row["isLogin"] = is_login?(row["userid"], time_begin, time_end)
-        row["sendMessage"] = buyer_send_message_number(row["userid"], time_begin.to_time.utc,  time_end.to_time.utc)
-        row["receivedMessage"] = buyer_received_message_number(row["userid"], time_begin.to_time.utc,  time_end.to_time.utc)
+        row["sendMessage"] = buyer_send_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+        row["receivedMessage"] = buyer_received_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
         row["time_begin"] = Date.parse(time_begin)
         row["time_end"] = Date.parse(time_end)
         event = LogStash::Event.new(row)
