@@ -1,4 +1,4 @@
-module ShenmaSql
+module LogStash::PluginMixins::ShenmaSql
   public 
   def buyer_everyday_data_sql(time_begin, time_end)
     "SELECT
