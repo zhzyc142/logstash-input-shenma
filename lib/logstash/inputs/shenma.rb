@@ -7,7 +7,7 @@ require "yaml" # persistence
 require "mongo"
 
 include Mongo
-include Yaml
+include YAML
 
 class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   include LogStash::PluginMixins::Shenma
@@ -137,10 +137,10 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   end
 
   def translate_name(hash, namespase)
-    yaml = Yaml::load(File.read("./locales/zh.yml"))
+    yaml = YAML::load(File.read("./locales/zh.yml"))
     res = {}
     hash.each do |k, v|
-      if(nk = yaml.try(:[], :zh).try(:[], namespase).try(:[], k))
+      if(nk = yaml.try(:[], "zh").try(:[], namespase.to_s).try(:[], k.to_s))
         res[nk] = v
       else
         res[k] = v
