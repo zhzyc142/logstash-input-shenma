@@ -5,10 +5,9 @@ require "logstash/plugin_mixins/shenma"
 require "logstash/plugin_mixins/shenma_sql"
 require "yaml" # persistence
 require "mongo"
-require "i18n"
 
 include Mongo
-include I18n
+include Yaml
 
 class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   include LogStash::PluginMixins::Shenma
