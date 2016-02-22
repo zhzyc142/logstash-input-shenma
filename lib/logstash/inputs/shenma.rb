@@ -114,8 +114,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   private
 
   def execute_query(queue)
-    @logger.error("run action #{execute_query}")
-    @logger.error("run action #{@jdbc_task_name == 'jdbc_task_name'}")
+    @logger.error("execute_query action #{queue}")
+    @logger.error("execute_query action #{@jdbc_task_name == 'jdbc_task_name'}")
     if @jdbc_task_name == "jdbc_task_name"
       execute_query_buyer_everyday_data(queue)
     end
