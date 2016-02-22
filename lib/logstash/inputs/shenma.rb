@@ -5,8 +5,10 @@ require "logstash/plugin_mixins/shenma"
 require "logstash/plugin_mixins/shenma_sql"
 require "yaml" # persistence
 require "mongo"
+require "i18n"
 
 include Mongo
+include I18n
 
 class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   include LogStash::PluginMixins::Shenma
@@ -128,11 +130,24 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["time_end"] = Date.parse(time_end).to_s
         row["orderamount"] = row["orderamount"].to_f
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
-        event = LogStash::Event.new(row)
+        event = LogStash::Event.new(translate_name(row))
         decorate(event)
         queue << event
       end
     end
+  end
+
+  def translate_name(hash, namespase)
+    yaml = Yaml::load(File.read("./locales/zh.yml"))
+    res = {}
+    hash.each do |k, v|
+      if(nk = yaml.try(:[], :zh).try(:[], namespase).try(:[], k))
+        res[nk] = v
+      else
+        res[k] = v
+      end
+    end
+    return res
   end
 
   def buyer_received_message_number(user_id, time_begin, time_end)
