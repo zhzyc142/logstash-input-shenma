@@ -130,7 +130,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["time_end"] = Date.parse(time_end).to_s
         row["orderamount"] = row["orderamount"].to_f
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
-        event = LogStash::Event.new(translate_name(row))
+        event = LogStash::Event.new(translate_name(row, "buyer_everyday_data"))
         decorate(event)
         queue << event
       end
