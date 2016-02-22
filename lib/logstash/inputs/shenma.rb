@@ -140,7 +140,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     yaml = YAML::load(File.read("./locales/zh.yml"))
     res = {}
     hash.each do |k, v|
-      if(nk = yaml.try(:[], "zh").try(:[], namespase.to_s).try(:[], k.to_s))
+      if(yaml["zh"] && yaml["zh"][namespase.to_s] &&  nk = yaml["zh"][namespase.to_s][k.to_s]
         res[nk] = v
       else
         res[k] = v
