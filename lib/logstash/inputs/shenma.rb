@@ -116,9 +116,35 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   private
 
   def execute_query(queue)
+    if @jdbc_task_name == "jdbc_task_name"
+      execute_query_buyer_everyday_data(queue)
+    end
+    # @parameters['sql_last_value'] = @sql_last_value
+    # time_begin = (Date.today()-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    # time_end = Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+    # execute_statement(buyer_everyday_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
+    #   if(row["userid"] && row["userid"]!=0)
+    #     row["isLogin"] = is_login?(row["userid"], time_begin, time_end)
+    #     row["sendMessage"] = buyer_send_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+    #     row["receivedMessage"] = buyer_received_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+    #     row["time_begin"] = Date.parse(time_begin).to_s
+    #     row["time_end"] = Date.parse(time_end).to_s
+    #     row["orderamount"] = row["orderamount"].to_f
+    #     row["orderrecivedamount"] = row["orderrecivedamount"].to_f
+    #     row["userLevel"] = (row["userLevel"] == 4 ? "专柜买手" : (row["userLevel"] == 8 ? "认证买手" : (row["userLevel"] == 16 ? "品牌买手" : "未知类型")  ))
+    #     event = LogStash::Event.new(translate_name(row, "buyer_everyday_data"))
+    #     decorate(event)
+    #     queue << event
+    #   end
+    end
+  end
+
+  def execute_query_buyer_everyday_data(queue)
     @parameters['sql_last_value'] = @sql_last_value
-    time_begin = (Date.today()-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
-    time_end = Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+    time_begin = @time_begin || (Date.today()-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    time_end = @time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
 
     execute_statement(buyer_everyday_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
       if(row["userid"] && row["userid"]!=0)
@@ -129,6 +155,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["time_end"] = Date.parse(time_end).to_s
         row["orderamount"] = row["orderamount"].to_f
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
+        row["userLevel"] = (row["userLevel"] == 4 ? "专柜买手" : (row["userLevel"] == 8 ? "认证买手" : (row["userLevel"] == 16 ? "品牌买手" : "未知类型")  ))
         event = LogStash::Event.new(translate_name(row, "buyer_everyday_data"))
         decorate(event)
         queue << event

@@ -4,6 +4,7 @@ module LogStash::PluginMixins::ShenmaSql
     "SELECT
       ims_associate.UserId,
       store.Id as storeid,
+      user.UserLevel as UserLevel,
       CASE
     WHEN ISNULL(
       ims_associate_apply.`StoreName`
