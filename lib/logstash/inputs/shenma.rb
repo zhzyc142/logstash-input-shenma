@@ -137,7 +137,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     #     decorate(event)
     #     queue << event
     #   end
-    end
+    # end
   end
 
   def execute_query_buyer_everyday_data(queue)
