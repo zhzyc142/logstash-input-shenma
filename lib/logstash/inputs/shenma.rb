@@ -147,7 +147,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     time_end = @time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
 
     execute_statement(buyer_everyday_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
-      @logger.error("run action callback #{row}")
+      
       if(row["userid"] && row["userid"]!=0)
         row["isLogin"] = is_login?(row["userid"], time_begin, time_end)
         row["sendMessage"] = buyer_send_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
@@ -156,6 +156,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["time_end"] = Date.parse(time_end).to_s
         row["orderamount"] = row["orderamount"].to_f
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
+        @logger.error("run action callback #{row['userLevel']}")
+        @logger.error("run action callback #{row['userlevel']}")
         row["userLevel"] = (row["userLevel"].to_i == 4 ? "专柜买手" : (row["userLevel"].to_i == 8 ? "认证买手" : (row["userLevel"].to_i == 16 ? "品牌买手" : "未知类型")  ))
         event = LogStash::Event.new(translate_name(row, "buyer_everyday_data"))
         decorate(event)
