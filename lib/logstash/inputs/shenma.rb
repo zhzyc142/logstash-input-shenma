@@ -151,7 +151,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   end
 
   def translate_name(hash, namespase)
-    yaml = YAML::load(File.read("#{File.dirname(File.expand_path(__FILE__))}/locales/zh.yml"))
+    yaml = YAML::load(File.read("#{File.dirname(File.dirname(File.dirname(File.dirname(File.expand_path(__FILE__)))))}/locales/zh.yml"))
     res = {}
     hash.each do |k, v|
       if yaml["zh"] && yaml["zh"][namespase.to_s] &&  yaml["zh"][namespase.to_s][k.to_s]
