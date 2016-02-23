@@ -248,7 +248,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
       }
     }
     client = Elasticsearch::Client.new(:host => @jdbc_ecs_host)
-    res = client.search({body: query, index: "esmapping%2FESUserVisitPage" })
+    res = client.search({body: query, index: "esmapping", type:"ESUserVisitPage" })
     @logger.error("ecs result #{res}")
 
     if res && res["aggregations"] && res["aggregations"]["stat_date"] && res["aggregations"]["stat_date"]["buckets"] && res["aggregations"]["stat_date"]["buckets"].class == Array
