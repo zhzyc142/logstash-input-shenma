@@ -299,7 +299,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         }
       }
     }
-    res = client.search({body: query, index: "esmapping"})
+    res = client.search({body: query, index: "esmapping", type:"ESUserVisitPage"})
     @logger.error("ecs result #{res}")
 
     if(res["hits"] && res["hits"]["total"] && res["hits"]["total"]> 0)
