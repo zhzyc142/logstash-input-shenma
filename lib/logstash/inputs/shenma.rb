@@ -146,7 +146,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["orderamount"] = row["orderamount"].to_f
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
         row["userLevel"] = (row["userlevel"].to_i == 4 ? "专柜买手" : (row["userlevel"].to_i == 8 ? "认证买手" : (row["userlevel"].to_i == 16 ? "品牌买手" : "未知类型")  ))
-        event = LogStash::Event.new(translate_name(row, "buyer_everyday_data"))
+        event = LogStash::Event.new(translate_name(row, "buyer_everyweek_data"))
         decorate(event)
         queue << event
       end
