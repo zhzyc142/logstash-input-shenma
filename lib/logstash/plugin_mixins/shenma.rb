@@ -23,7 +23,8 @@ module LogStash::PluginMixins::Shenma
     config :jdbc_task_name, :validate => :string, :default=>"buyer_everyday_data"
     config :jdbc_ecs_host, :validate => :string, :default=>"http://localhost:9200/"
 
-    config :statistical_days, :validate => :number, :default => 1
+    config :date_interval, :validate => :string, :default => 'day'
+    config :time_end, :validate => :string
 
     config :mongo_conn_uri, :validate => :string, :default=>"mongodb://Mhdev:Mhdev_123@182.92.7.70:27017/chatserver"
 
