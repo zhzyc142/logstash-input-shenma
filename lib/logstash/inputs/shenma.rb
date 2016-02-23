@@ -141,6 +141,9 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["login_days"] = login_days(row["userid"], time_begin, time_end)
         row["sendMessage"] = buyer_send_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
         row["receivedMessage"] = buyer_received_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+        row["private_message_number"] = buyer_private_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+        row["group_message_number"] = buyer_group_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+        row["private_message_customer_number"] = buyer_private_message_customer_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
         row["time_begin"] = Date.parse(time_begin).to_s
         row["time_end"] = Date.parse(time_end).to_s
         row["orderamount"] = row["orderamount"].to_f
@@ -193,6 +196,22 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
       end
     end
     return res
+  end
+
+  def buyer_private_message_customer_number(user_id, time_begin, time_end)
+    @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "toUserId"=> user_id.to_i, "messageType" => 0 ).group_by{|m| m["fromUserId"]}.size
+  end
+
+  def buyer_private_message_number(user_id, time_begin, time_end)
+    @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "toUserId"=> user_id.to_i, "messageType" => 0 ).to_a.size
+    + 
+    @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "fromUserId"=> user_id.to_i, "messageType" => 0 ).to_a.size
+  end
+
+  def buyer_group_message_number(user_id, time_begin, time_end)
+    @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "toUserId"=> user_id.to_i, "messageType" => 1 ).to_a.size
+    + 
+    @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "fromUserId"=> user_id.to_i, "messageType" => 1 ).to_a.size
   end
 
   def buyer_received_message_number(user_id, time_begin, time_end)

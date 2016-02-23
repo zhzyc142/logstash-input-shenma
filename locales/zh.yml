@@ -19,8 +19,7 @@ zh:
   buyer_everyweek_data:
     allfavoritenumber: 粉丝总数
     buyername: 买手名称
-    isLogin: 是否登陆
-    lastdayaddfavorite: 昨日新增粉丝数
+    lastdayaddfavorite: 新增粉丝数
     orderamount: 订单金额
     orderrecivedamount: 实收金额
     receivedMessage: 收到消息数
@@ -34,3 +33,6 @@ zh:
     userid: 用户id
     userLevel: 买手类别
     login_days: 活跃天数
+    private_message_number: 私聊条数
+    group_message_number: 圈子聊天条数
+    private_message_customer_number: 私聊顾客数
