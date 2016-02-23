@@ -116,6 +116,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   def execute_query(queue)
     @logger.error("execute_query action #{@jdbc_task_name}")
     @logger.error("execute_query action #{@jdbc_task_name == 'buyer_everyday_data'}")
+    
     if @jdbc_task_name == "buyer_everyday_data"
       execute_query_buyer_everyday_data(queue)
     end
@@ -150,7 +151,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   end
 
   def translate_name(hash, namespase)
-    yaml = YAML::load(File.read("./locales/zh.yml"))
+    yaml = YAML::load(File.read("#{File.dirname(File.expand_path(__FILE__)}/locales/zh.yml"))
     res = {}
     hash.each do |k, v|
       if yaml["zh"] && yaml["zh"][namespase.to_s] &&  yaml["zh"][namespase.to_s][k.to_s]
