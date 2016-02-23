@@ -119,9 +119,41 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     
     if @jdbc_task_name == "buyer_everyday_data"
       execute_query_buyer_everyday_data(queue)
+    elsif @jdbc_task_name == "buyer_everyweek_data"
+      execute_query_buyer_everyweek_data(queue)
     end
   end
 
+  #每周买手数据
+  def execute_query_buyer_everyweek_data(queue)
+    @parameters['sql_last_value'] = @sql_last_value
+    time_end =@time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    if @date_interval == 'week'
+      time_begin =  (Date.parse(time_end)-7).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    elsif @date_interval == 'month'
+      time_begin =  (Date.parse(time_end) << 1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    else
+      time_begin =  (Date.parse(time_end)-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    end
+    execute_statement(buyer_everyweek_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
+      
+      if(row["userid"] && row["userid"]!=0)
+        row["login_days"] = login_days(row["userid"], time_begin, time_end)
+        row["sendMessage"] = buyer_send_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+        row["receivedMessage"] = buyer_received_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+        row["time_begin"] = Date.parse(time_begin).to_s
+        row["time_end"] = Date.parse(time_end).to_s
+        row["orderamount"] = row["orderamount"].to_f
+        row["orderrecivedamount"] = row["orderrecivedamount"].to_f
+        row["userLevel"] = (row["userlevel"].to_i == 4 ? "专柜买手" : (row["userlevel"].to_i == 8 ? "认证买手" : (row["userlevel"].to_i == 16 ? "品牌买手" : "未知类型")  ))
+        event = LogStash::Event.new(translate_name(row, "buyer_everyday_data"))
+        decorate(event)
+        queue << event
+      end
+    end
+  end
+
+  #每日买手数据导出
   def execute_query_buyer_everyday_data(queue)
     @parameters['sql_last_value'] = @sql_last_value
     time_end =@time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
@@ -178,6 +210,57 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "fromUserId"=> user_id.to_i ).to_a.size
   end
 
+  def login_days(user_id, time_begin, time_end)
+    query={
+      "size"=> 0, 
+      "query"=> {
+        "bool"=> {
+          "must"=> [
+            {
+              "range"=> {
+                "visitDate"=> {
+                  "gte"=> time_begin
+                }
+              }
+            },
+            {
+              "range"=> {
+                "visitDate"=> {
+                  "lte"=> time_end
+                }
+              }
+            },
+            {
+              "terms"=> {
+                "userId"=> [ user_id ]
+              }
+            }
+          ]
+        }
+      },
+      "aggs"=> {
+        "stat_date"=> {
+          "date_histogram"=> {
+            "field"=> "visitDate",
+            "interval"=> "day"
+          }
+        }
+      }
+    }
+    client = Elasticsearch::Client.new(:host => @jdbc_ecs_host)
+    res = client.search({body: query, index: "esmapping/ESUserVisitPage"})
+    @logger.error("ecs result #{res}")
+
+    if res && res["aggregations"] && res["aggregations"]["stat_date"] && res["aggregations"]["stat_date"]["buckets"] && res["aggregations"]["stat_date"]["buckets"].class == Array
+      res["aggregations"]["stat_date"]["buckets"]
+      return res["aggregations"]["stat_date"]["buckets"].inject(0){|sum, e| (e["doc_count"] && e["doc_count"] > 0) ? sum+1 : sum}
+    else
+      return 0
+    end
+
+
+  end
+
   def is_login?(user_id, time_begin, time_end)
     client = Elasticsearch::Client.new(:host => @jdbc_ecs_host)
     query = {
@@ -185,13 +268,6 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
       "query"=> {
         "bool"=> {
           "must"=> [
-            {
-              "term"=> {
-                "userLevel"=> {
-                  "value"=> 4
-                }
-              }
-            },
             {
               "range"=> {
                 "visitDate"=> {
@@ -218,7 +294,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         "stat_user"=> {
           "terms"=> {
             "field"=> "userId",
-            "size"=> 1000
+            "size"=> 10000
           }
         }
       }
