@@ -143,8 +143,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   def execute_query_buyer_everyday_data(queue)
     @parameters['sql_last_value'] = @sql_last_value
 
-    time_begin = @time_begin || (Date.today()-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
-    time_end = @time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    time_begin =  (Date.today()-@statistical_days).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    time_end = Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
 
     execute_statement(buyer_everyday_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
       
