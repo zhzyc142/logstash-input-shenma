@@ -11,7 +11,7 @@ module LogStash::PluginMixins::ShenmaSql
         SELECT
           `orders`.`CustomerId` AS `CustomerId`,
           COUNT(1) AS `mulit_buy_number`,
-          COUNT(TotalAmount) AS 'total_amount'
+          SUM(TotalAmount) AS 'total_amount'
         FROM
           `Order` AS `orders`
         INNER JOIN `IMS_AssociateIncomeHistory` AS `income` ON `orders`.`OrderNo` = `income`.`SourceNo`
