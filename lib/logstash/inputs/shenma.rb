@@ -145,7 +145,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     all_new_orders_group_buyeruserid = all_new_orders.to_a.group_by{|o| o["buyer_userid"]}
     @logger.error("all_new_orders_group_buyeruserid action *******************\r\n #{all_new_orders_group_buyeruserid}")
 
-    all_orders = @database["select income.AssociateUserId, o.CustomerId, count(1) as order_number from `order` o join ims_associateincomehistory income on o.OrderNo = income.SourceNo where o.`Status` > 0 and creationDate < '#{time_end}' group by o.CustomerId, income.AssociateUserId", {}].to_a
+    all_orders = @database["select income.AssociateUserId, o.CustomerId, count(1) as order_number from `order` o join ims_associateincomehistory income on o.OrderNo = income.SourceNo where o.`Status` > 0 and o.CreateDate < '#{time_end}' group by o.CustomerId, income.AssociateUserId", {}].to_a
 
 
     execute_statement(buyer_everyweek_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
