@@ -37,8 +37,8 @@ module LogStash::PluginMixins::ShenmaSql
   def  new_add_orders_sql(time_begin, time_end)
     " select o.*, income.AssociateUserId as buyer_userid from `order` o  
       join ims_associateincomehistory income on o.OrderNo = income.SourceNo
-      where o.CreateDate > '#{time_begin}' and o.CreateDate < '#{time_end}' and o.`Status` >= 1 and buyer.`Status` = 1
-      order by buyer.UserId
+      where o.CreateDate > '#{time_begin}' and o.CreateDate < '#{time_end}' and o.`Status` >= 1 
+      order by income.AssociateUserId 
     "
   end
 
