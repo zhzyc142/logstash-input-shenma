@@ -169,7 +169,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
           mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}].to_a
           @logger.error("mulit_buy_sql action #{row['userid']} *******************\r\n #{mulit_buy_data.to_a}")
           row["mulit_buy_number"] =  mulit_buy_data.select{|x| x[:mulit_buy_number] > 1}.size
-          row["mulit_buy_number"] =  mulit_buy_data.select{|x| x[:mulit_buy_number] > 1}.inject(0){|sum, x| sum+x[:total_amount]}
+          row["mulit_buy_number"] =  mulit_buy_data.select{|x| x[:mulit_buy_number] > 1}.inject(0){|sum, x| sum+x[:total_amount].to_f}
           row["customer_total_amount"] = all_new_orders_group_buyeruserid[row["userid"]].group_by{|x| x["customerid"]}.size
           row["new_customer_total_amount"] = (all_new_orders_group_buyeruserid[row["userid"]].group_by{|x| x["customerid"]}.keys & all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}).size
         end
