@@ -4,7 +4,8 @@ module LogStash::PluginMixins::ShenmaSql
   def mulit_buy_sql(buyer_userid, customer_userids, time_end)
     "SELECT
       `data`.`CustomerId` ,
-      `data`.`mulit_buy_number`
+      `data`.`mulit_buy_number`,
+      `data`.`total_amount`
     FROM
       (
         SELECT

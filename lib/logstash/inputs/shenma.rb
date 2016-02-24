@@ -145,6 +145,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     all_new_orders_group_buyeruserid = all_new_orders.to_a.group_by{|o| o["buyer_userid"]}
     @logger.error("all_new_orders_group_buyeruserid action *******************\r\n #{all_new_orders_group_buyeruserid}")
 
+    all_orders = @database["select income.AssociateUserId, o.CustomerId, count(1) as order_number from `order` o join ims_associateincomehistory income on o.OrderNo = income.SourceNo where o.`Status` > 0 and creationDate < '#{time_end}' group by o.CustomerId, income.AssociateUserId", {}].to_a
+
 
     execute_statement(buyer_everyweek_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
       
@@ -166,10 +168,12 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["customer_total_amount"] = 0
         row["new_customer_total_amount"] = 0
         if all_new_orders_group_buyeruserid[row["userid"]]
-          mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}].to_a
+          all_mulit_buy_customerids = all_orders.select{|x| x[:associateUserId] == row["userid"] && x[:order_number] > 1 }.map{|x| x[:customerid]}
+
+          mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}].to_a.select{|x| all_mulit_buy_customerids.include?(x[:customerid]) }
           @logger.error("mulit_buy_sql action #{row['userid']} *******************\r\n #{mulit_buy_data.to_a}")
-          row["mulit_buy_number"] =  mulit_buy_data.select{|x| x[:mulit_buy_number] > 1}.size
-          row["mulit_buy_number"] =  mulit_buy_data.select{|x| x[:mulit_buy_number] > 1}.inject(0){|sum, x| sum+x[:total_amount].to_f}
+          row["mulit_buy_number"] =  mulit_buy_data.size
+          row["mulit_buy_total_amount"] =  mulit_buy_data.inject(0){|sum, x| sum+x[:total_amount].to_f}
           row["customer_total_amount"] = all_new_orders_group_buyeruserid[row["userid"]].group_by{|x| x["customerid"]}.size
           row["new_customer_total_amount"] = (all_new_orders_group_buyeruserid[row["userid"]].group_by{|x| x["customerid"]}.keys & all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}).size
         end
