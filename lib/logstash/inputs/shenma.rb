@@ -161,9 +161,17 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
         row["userLevel"] = (row["userlevel"].to_i == 4 ? "专柜买手" : (row["userlevel"].to_i == 8 ? "认证买手" : (row["userlevel"].to_i == 16 ? "品牌买手" : "未知类型")  ))
 
+        row["mulit_buy_number"] = 0
+        row["mulit_buy_total_amount"] = 0
+        row["customer_total_amount"] = 0
+        row["new_customer_total_amount"] = 0
         if all_new_orders_group_buyeruserid[row["userid"]]
           mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}]
           @logger.error("mulit_buy_sql action #{row['userid']} *******************\r\n #{mulit_buy_data.to_a}")
+          row["mulit_buy_number"] =  mulit_buy_data.to_a.map{|x| x[:mulit_buy_number] > 1}.size
+          row["mulit_buy_number"] =  mulit_buy_data.to_a.map{|x| x[:mulit_buy_number] > 1}.inject(0){|sum, x| sum+x[:total_amount]}
+          row["customer_total_amount"] = all_new_orders_group_buyeruserid[row["userid"]].group_by{|x| x["customerid"]}.size
+          row["new_customer_total_amount"] = (all_new_orders_group_buyeruserid[row["userid"]].group_by{|x| x["customerid"]}.keys & all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}).size
         end
 
         event = LogStash::Event.new(translate_name(row, "buyer_everyweek_data"))

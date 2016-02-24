@@ -3,34 +3,35 @@ module LogStash::PluginMixins::ShenmaSql
 
   def mulit_buy_sql(buyer_userid, customer_userids, time_end)
     "SELECT
-      `GroupBy1`.`K1` AS `CustomerId`,
-      `GroupBy1`.`A1` AS `C1`
+      `data`.`CustomerId` ,
+      `data`.`mulit_buy_number`
     FROM
       (
         SELECT
-          `Extent1`.`CustomerId` AS `K1`,
-          COUNT(1) AS `A1`
+          `orders`.`CustomerId` AS `CustomerId`,
+          COUNT(1) AS `mulit_buy_number`,
+          COUNT(TotalAmount) AS 'total_amount'
         FROM
-          `Order` AS `Extent1`
-        INNER JOIN `IMS_AssociateIncomeHistory` AS `Extent2` ON `Extent1`.`OrderNo` = `Extent2`.`SourceNo`
+          `Order` AS `orders`
+        INNER JOIN `IMS_AssociateIncomeHistory` AS `income` ON `orders`.`OrderNo` = `income`.`SourceNo`
         WHERE
           (
             (
-              (`Extent1`.`Status` >= 0)
+              (`orders`.`Status` >= 0)
               AND (
-                `Extent1`.`CreateDate` < '#{time_end}'
+                `orders`.`CreateDate` < '#{time_end}'
               )
             )
             AND (
-              `Extent1`.`CustomerId` IN (#{customer_userids}) 
+              `orders`.`CustomerId` IN (#{customer_userids}) 
             )
           )
         AND (
-          `Extent2`.`AssociateUserId` = '#{buyer_userid}'
+          `income`.`AssociateUserId` = '#{buyer_userid}'
         )
         GROUP BY
-          `Extent1`.`CustomerId`
-      ) AS `GroupBy1`
+          `orders`.`CustomerId`
+      ) AS `data`
     "
   end
 

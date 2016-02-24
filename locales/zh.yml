@@ -36,3 +36,7 @@ zh:
     private_message_number: 私聊条数
     group_message_number: 圈子聊天条数
     private_message_customer_number: 私聊顾客数
+    mulit_buy_number: 二次成交顾客数
+    mulit_buy_total_amount: 二次成交顾客成交金额
+    customer_total_amount: 成交顾客数
+    new_customer_total_amount: 二次成交顾客数
