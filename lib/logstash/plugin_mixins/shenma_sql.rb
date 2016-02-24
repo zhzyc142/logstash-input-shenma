@@ -1,6 +1,85 @@
 module LogStash::PluginMixins::ShenmaSql
   public 
 
+  def new_add_favorite(time_begin, time_end)
+    "SELECT
+      `Project2`.`FavoriteSourceId`,
+      `Project2`.`C1`,
+      `Project2`.`Id`,
+      `Project2`.`FavoriteSourceId1`,
+      `Project2`.`FavoriteSourceType`,
+      `Project2`.`User_Id`,
+      `Project2`.`CreatedUser`,
+      `Project2`.`CreatedDate`,
+      `Project2`.`Description`,
+      `Project2`.`Status`,
+      `Project2`.`Store_Id`
+    FROM
+      (
+        SELECT
+          `Distinct1`.`FavoriteSourceId`,
+          `Extent2`.`Id`,
+          `Extent2`.`FavoriteSourceId` AS `FavoriteSourceId1`,
+          `Extent2`.`FavoriteSourceType`,
+          `Extent2`.`User_Id`,
+          `Extent2`.`CreatedUser`,
+          `Extent2`.`CreatedDate`,
+          `Extent2`.`Description`,
+          `Extent2`.`Status`,
+          `Extent2`.`Store_Id`,
+          CASE
+        WHEN (`Extent2`.`Id` IS NULL) THEN
+          (NULL)
+        ELSE
+          (1)
+        END AS `C1`
+        FROM
+          (
+            SELECT DISTINCT
+              `Extent1`.`FavoriteSourceId`
+            FROM
+              `Favorite` AS `Extent1`
+            WHERE
+              (
+                (
+                  (1 = `Extent1`.`Status`)
+                  AND (
+                    7 = `Extent1`.`FavoriteSourceType`
+                  )
+                )
+                AND (
+                  `Extent1`.`CreatedDate` >= '#{time_begin}'
+                )
+              )
+            AND (
+              `Extent1`.`CreatedDate` < '#{time_end}'
+            )
+          ) AS `Distinct1`
+        LEFT OUTER JOIN `Favorite` AS `Extent2` ON (
+          (
+            (
+              (1 = `Extent2`.`Status`)
+              AND (
+                7 = `Extent2`.`FavoriteSourceType`
+              )
+            )
+            AND (
+              `Extent2`.`CreatedDate` >=  '#{time_begin}'
+            )
+          )
+          AND (
+            `Extent2`.`CreatedDate` < '#{time_end}'
+          )
+        )
+        AND (
+          `Distinct1`.`FavoriteSourceId` = `Extent2`.`FavoriteSourceId`
+        )
+      ) AS `Project2`
+    ORDER BY
+      `Project2`.`FavoriteSourceId` ASC,
+      `Project2`.`C1` ASC" 
+  end
+
   def buyer_everyweek_data_sql(time_begin, time_end)
     "SELECT
       ims_associate.UserId,

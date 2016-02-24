@@ -135,6 +135,11 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     else
       time_begin =  (Date.parse(time_end)-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
     end
+
+    all_new_customer = @database[new_add_favorite(time_begin,time_end), {}]
+    @logger.error("all_new_customer action *******************\r\n #{all_new_customer}")
+
+
     execute_statement(buyer_everyweek_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
       
       if(row["userid"] && row["userid"]!=0)
