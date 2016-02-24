@@ -137,7 +137,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     end
 
     all_new_customer = @database[new_add_favorite(time_begin,time_end), {}]
-    @logger.error("all_new_customer action *******************\r\n #{all_new_customer}")
+    @logger.error("all_new_customer action *******************\r\n #{all_new_customer.to_a}")
 
 
     execute_statement(buyer_everyweek_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
