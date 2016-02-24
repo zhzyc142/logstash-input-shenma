@@ -142,6 +142,9 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     all_new_orders = @database[new_add_orders_sql(time_begin,time_end), {}]
     @logger.error("all_new_customer action *******************\r\n #{all_new_orders.to_a}")
 
+    all_new_orders_group_buyeruserid = all_new_orders.to_a.group_by{|o| o["buyer_userid"]}
+    @logger.error("all_new_orders_group_buyeruserid action *******************\r\n #{all_new_orders_group_buyeruserid}")
+
 
     execute_statement(buyer_everyweek_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
       
@@ -158,7 +161,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
         row["userLevel"] = (row["userlevel"].to_i == 4 ? "专柜买手" : (row["userlevel"].to_i == 8 ? "认证买手" : (row["userlevel"].to_i == 16 ? "品牌买手" : "未知类型")  ))
 
-        mulit_buy_data = @database[mulit_buy_sql(row["userid"], time_begin,time_end), {}]
+        mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}]
         @logger.error("mulit_buy_sql action #{row['userid']} *******************\r\n #{mulit_buy_data.to_a}")
 
         event = LogStash::Event.new(translate_name(row, "buyer_everyweek_data"))
