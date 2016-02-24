@@ -168,7 +168,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["customer_total_amount"] = 0
         row["new_customer_total_amount"] = 0
         if all_new_orders_group_buyeruserid[row["userid"]]
-          all_mulit_buy_customerids = all_orders.select{|x| x[:associateUserId] == row["userid"] && x[:order_number] > 1 }.map{|x| x[:customerid]}
+          all_mulit_buy_customerids = all_orders.select{|x| x[:associateuserid] == row["userid"] && x[:order_number] > 1 }.map{|x| x[:customerid]}
 
            @logger.error("all_mulit_buy_customerids action #{row['userid']} *******************\r\n #{all_mulit_buy_customerids}")
           mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}].to_a.select{|x| all_mulit_buy_customerids.include?(x[:customerid]) }
