@@ -161,8 +161,10 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["orderrecivedamount"] = row["orderrecivedamount"].to_f
         row["userLevel"] = (row["userlevel"].to_i == 4 ? "专柜买手" : (row["userlevel"].to_i == 8 ? "认证买手" : (row["userlevel"].to_i == 16 ? "品牌买手" : "未知类型")  ))
 
-        mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}]
-        @logger.error("mulit_buy_sql action #{row['userid']} *******************\r\n #{mulit_buy_data.to_a}")
+        if all_new_orders_group_buyeruserid[row["userid"]]
+          mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}]
+          @logger.error("mulit_buy_sql action #{row['userid']} *******************\r\n #{mulit_buy_data.to_a}")
+        end
 
         event = LogStash::Event.new(translate_name(row, "buyer_everyweek_data"))
         decorate(event)
