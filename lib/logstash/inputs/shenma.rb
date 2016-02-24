@@ -171,9 +171,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
           all_mulit_buy_customerids = all_orders.select{|x| x[:associateuserid] == row["userid"] && x[:order_number] > 1 }.map{|x| x[:customerid]}
 
            @logger.error("all_mulit_buy_customerids action #{row['userid']} *******************\r\n #{all_mulit_buy_customerids}")
-          mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end), {}].to_a.select{|x| all_mulit_buy_customerids.include?(x[:customerid]) }
-           @logger.error("mulit_buy_sql mulit_buy_sql mulit_buy_sql action #{row['userid']} *******************\r\n #{mulit_buy_sql(row['userid'],all_new_orders_group_buyeruserid[row['userid']].map{|x| x['customerid']}.join(','),time_end)}")
-          @logger.error("mulit_buy_sql action #{row['userid']} *******************\r\n #{mulit_buy_data.to_a} \r\n #{mulit_buy_data.inject(0){|sum, x| sum+x[:total_amount].to_f}}")
+          mulit_buy_data = @database[mulit_buy_sql(row["userid"],all_new_orders_group_buyeruserid[row["userid"]].map{|x| x["customerid"]}.join(","),time_end, time_begin), {}].to_a.select{|x| all_mulit_buy_customerids.include?(x[:customerid]) }
+
           row["mulit_buy_number"] =  mulit_buy_data.size
           row["mulit_buy_total_amount"] =  mulit_buy_data.inject(0){|sum, x| sum+x[:total_amount].to_f}
           row["customer_total_amount"] = all_new_orders_group_buyeruserid[row["userid"]].group_by{|x| x["customerid"]}.size

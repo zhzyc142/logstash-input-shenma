@@ -1,7 +1,7 @@
 module LogStash::PluginMixins::ShenmaSql
   public 
 
-  def mulit_buy_sql(buyer_userid, customer_userids, time_end)
+  def mulit_buy_sql(buyer_userid, customer_userids, time_end, time_begin)
     "SELECT
       `data`.`CustomerId` ,
       `data`.`mulit_buy_number`,
@@ -18,9 +18,12 @@ module LogStash::PluginMixins::ShenmaSql
         WHERE
           (
             (
-              (`orders`.`Status` >= 0)
+              (`orders`.`Status` > 0)
               AND (
                 `orders`.`CreateDate` < '#{time_end}'
+              )
+              AND (
+                `orders`.`CreateDate` >= '#{time_begin}'
               )
             )
             AND (
@@ -39,7 +42,7 @@ module LogStash::PluginMixins::ShenmaSql
   def  new_add_orders_sql(time_begin, time_end)
     " select o.*, income.AssociateUserId as buyer_userid from `order` o  
       join ims_associateincomehistory income on o.OrderNo = income.SourceNo
-      where o.CreateDate > '#{time_begin}' and o.CreateDate < '#{time_end}' and o.`Status` >= 1 
+      where o.CreateDate >= '#{time_begin}' and o.CreateDate < '#{time_end}' and o.`Status` >= 1 
       order by income.AssociateUserId 
     "
   end
@@ -59,7 +62,7 @@ module LogStash::PluginMixins::ShenmaSql
       favorite.LastVisitDate
       from favorite
            join ims_associate on ims_associate.id = favorite.FavoriteSourceId
-      where favorite.FavoriteSourceType = 7 and favorite.Status = 1 and favorite.CreatedDate < '#{time_end}' and favorite.CreatedDate > '#{time_begin}'
+      where favorite.FavoriteSourceType = 7 and favorite.Status = 1 and favorite.CreatedDate < '#{time_end}' and favorite.CreatedDate >= '#{time_begin}'
     "
   end
 
