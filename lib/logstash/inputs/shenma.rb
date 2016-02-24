@@ -139,7 +139,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     all_new_customer = @database[new_add_favorite_sql(time_begin,time_end), {}]
     @logger.error("all_new_customer action *******************\r\n #{all_new_customer.to_a}")
 
-    all_new_orders = @database[new_add_orders_sql(time_begin,time_end), {}]
+    all_new_orders = @database[new_add_orders_sql(time_begin,time_end), {}].to_a.map{|x| extract_values_from(x)}
     @logger.error("all_new_customer action *******************\r\n #{all_new_orders.to_a}")
 
     all_new_orders_group_buyeruserid = all_new_orders.to_a.group_by{|o| o["buyer_userid"]}

@@ -254,13 +254,13 @@ module LogStash::PluginMixins::Shenma
     end
   end
 
-  private
+  public
   #Stringify row keys and decorate values when necessary
   def extract_values_from(row)
     Hash[row.map { |k, v| [k.to_s, decorate_value(v)] }]
   end
 
-  private
+  public
   def decorate_value(value)
 
     if value.is_a?(Time)
