@@ -115,7 +115,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
   def execute_query(queue)
     @logger.error("execute_query action #{@jdbc_task_name}")
-    @logger.error("execute_query action #{@jdbc_task_name == 'buyer_everyday_data'}")
+    @logger.error("execute_query action #{@jdbc_task_name == 'store_everyweek_data'}")
     
     if @jdbc_task_name == "buyer_everyday_data"
       execute_query_buyer_everyday_data(queue)
@@ -136,7 +136,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     else
       time_begin =  (Date.parse(time_end)-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
     end
-    execute_statement(buyer_everyweek_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
+    execute_statement(store_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
       if(row["store_id"] && row["store_id"]!=0)
         event = LogStash::Event.new(translate_name(row, "store_data"))
         decorate(event)
