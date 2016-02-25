@@ -346,7 +346,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     client = Elasticsearch::Client.new(:host => @jdbc_ecs_host)
     res = client.search({body: query, index: "esmapping", type:"ESUserVisitPage" })
     if res && res["aggregations"] && res["aggregations"]["stat_user"] && res["aggregations"]["stat_user"]["buckets"] && res["aggregations"]["stat_user"]["buckets"].class == Array
-      return res["aggregations"]["stat_user"]["buckets"].select{|x| x.doc_count > 0}.size
+      return res["aggregations"]["stat_user"]["buckets"].select{|x| x["doc_count"] > 0}.size
     else
       return 0
     end 
