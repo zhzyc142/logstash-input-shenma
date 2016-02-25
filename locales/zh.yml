@@ -51,3 +51,16 @@ zh:
     add_customers: 新增顾客数
     mulit_buy_number: 二次成交顾客数
     customer_total_amount: 成交顾客数
+  section_data:
+    send_message_buyers: 私聊顾客的导购数
+    login_buyers: 活跃买手数
+    time_begin: 统计起始时间
+    time_end: 统计结束时间
+    store_name: 门店
+    section_id: 专柜编码
+    section_name: 专柜名称
+    buyer_count: 买手数
+    favorite_count: 新增粉丝数
+    add_customers: 新增顾客数
+    mulit_buy_number: 二次成交顾客数
+    customer_total_amount: 成交顾客数

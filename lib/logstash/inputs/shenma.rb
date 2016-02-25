@@ -126,6 +126,61 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     end
   end
 
+  def execute_query_section_data(queue)
+    @parameters['sql_last_value'] = @sql_last_value
+    time_end =@time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    if @date_interval == 'week'
+      time_begin =  (Date.parse(time_end)-7).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    elsif @date_interval == 'month'
+      time_begin =  (Date.parse(time_end) << 1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    else
+      time_begin =  (Date.parse(time_end)-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    end
+    all_orders = @database["select income.AssociateUserId, o.CustomerId, count(1) as order_number from `order` o join ims_associateincomehistory income on o.OrderNo = income.SourceNo where o.`Status` > 0 and o.CreateDate < '#{time_end}' group by o.CustomerId, income.AssociateUserId", {}].to_a
+    @logger.error("all_orders \r\n#{all_orders}\r\n")
+    execute_statement(section_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
+      if(row["section_id"] && row["section_id"]!=0)
+        buyers = @database["select * from ims_associate where sectionId = #{row['section_id']} and `Status` = 1", {}].to_a
+        buyer_userids = buyers.map{|x| x[:userid]}
+        if buyers.size > 0
+          row["login_buyers"] = login_buyers(buyer_userids, time_begin, time_end)
+          row["add_customers"]  = @database["select * from customer_manage where OwnerUserId in ( #{buyer_userids.join(',')} ) and `Status` = 1 and CreateDate >= '#{time_begin}' and CreateDate < '#{time_end}' ", {}].to_a.size
+
+          sql = "SELECT DISTINCT `order`.customerid as customerid FROM `order` 
+            JOIN ims_associateincomehistory ON `order`.OrderNo = ims_associateincomehistory.SourceNo
+            WHERE
+              ims_associateincomehistory.AssociateUserId IN (#{buyer_userids.join(',')})
+            AND `order`. STATUS > 0
+            AND `order`.CreateDate >= '#{time_begin}'
+            AND `order`.CreateDate < '#{time_end}'"
+          @logger.error("sqlsql \r\n#{sql}\r\n")
+
+          customerids = @database[sql, {}].to_a.map{|x| x[:customerids]}
+
+          row["customer_total_amount"] = customerids.size
+
+          all_mulit_buy_customerids = all_orders.select{|x| buyer_userids.include?(x[:associateuserid]) && x[:order_number] > 1 }.map{|x| x[:customerid]} & customerids
+          row["mulit_buy_number"] = all_mulit_buy_customerids.size
+
+          row["send_message_buyers"] = send_private_message_buyers(buyer_userids, time_begin, time_end)
+        end
+
+
+
+
+        row["time_begin"] = Date.parse(time_begin).to_s
+        row["time_end"] = Date.parse(time_end).to_s
+
+        @logger.error("call back row action \r\n#{row}\r\n")
+        event = LogStash::Event.new(translate_name(row, "section_data"))
+        decorate(event)
+        queue << event
+      end
+    end
+
+
+  end
+
   def execute_query_store_data(queue)
     @parameters['sql_last_value'] = @sql_last_value
     time_end =@time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
@@ -170,7 +225,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
           row["mulit_buy_number"] = all_mulit_buy_customerids.size
         else
-          
+
         end
 
 
@@ -287,6 +342,10 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
       end
     end
     return res
+  end
+
+  def send_private_message_buyers(buyer_userids, time_begin, time_end)
+     @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end},  "messageType" => 0, "fromUserId" => {"$in" => buyer_userids} ).to_a.group_by{|x| x["fromUserId"]}.size
   end
 
   def buyer_private_message_customer_number(user_id, time_begin, time_end)
