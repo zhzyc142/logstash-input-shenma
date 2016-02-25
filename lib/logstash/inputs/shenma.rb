@@ -136,8 +136,38 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     else
       time_begin =  (Date.parse(time_end)-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
     end
+
+
+    all_orders = @database["select income.AssociateUserId, o.CustomerId, count(1) as order_number from `order` o join ims_associateincomehistory income on o.OrderNo = income.SourceNo where o.`Status` > 0 and o.CreateDate < '#{time_end}' group by o.CustomerId, income.AssociateUserId", {}].to_a
+
     execute_statement(store_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
       if(row["store_id"] && row["store_id"]!=0)
+        
+
+        buyers = @database["select * from ims_associate where StoreId = #{row['store_id']} and `Status` = 1", {}].to_a
+        buyer_userids = buyers.map{|x| x[:userid]}
+        row["login_buyers"] = login_buyers(buyer_userids, time_begin, time_end)
+
+        row["add_customers"]  = @database["select * from customer_manage where OwnerUserId in ( #{buyer_userids.join(',')} ) and `Status` = 1 and CreateDate >= '#{time_begin}' and CreateDate < '#{time_end}' ", {}].to_a.size
+
+        customerids = @database["SELECT DISTINCT `order`.customerid as customerid FROM `order` 
+          JOIN ims_associateincomehistory ON `order`.OrderNo = ims_associateincomehistory.SourceNo
+          WHERE
+            ims_associateincomehistory.AssociateUserId IN (#{buyer_userids.join(',')})
+          AND `order`. STATUS > 0
+          AND `order`.CreateDate >= '#{time_begin}'
+          AND `order`.CreateDate < '#{time_end}'", {}].to_a
+
+        row["customer_total_amount"] = customerids.size
+
+        all_mulit_buy_customerids = all_orders.select{|x| buyer_userids.include?(x[:associateuserid]) && x[:order_number] > 1 }.map{|x| x[:customerid]}
+
+        row["mulit_buy_number"] = all_mulit_buy_customerids.size
+
+
+        row["time_begin"] = Date.parse(time_begin).to_s
+        row["time_end"] = Date.parse(time_end).to_s
+
         event = LogStash::Event.new(translate_name(row, "store_data"))
         decorate(event)
         queue << event
@@ -275,6 +305,51 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     #   "dbname":"chatserver"
     # conn = Mongo::Client.new("mongodb://Mhdev:Mhdev_123@182.92.7.70:27017/chatserver")
     @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "fromUserId"=> user_id.to_i ).to_a.size
+  end
+
+  def login_buyers(userids, time_begin, time_end)
+    query={
+      "size"=> 0, 
+      "query"=> {
+        "bool"=> {
+          "must"=> [
+            {
+              "range"=> {
+                "visitDate"=> {
+                  "gte"=> time_begin
+                }
+              }
+            },
+            {
+              "range"=> {
+                "visitDate"=> {
+                  "lte"=> time_end
+                }
+              }
+            },
+            {
+              "terms"=> {
+                "userId"=> [ user_ids ].flatten
+              }
+            }
+          ]
+        }
+      },
+      "aggs"=> {
+        "stat_user"=> {
+          "terms"=> {
+            "field"=> "userId"
+          }
+        }
+      }
+    }
+    client = Elasticsearch::Client.new(:host => @jdbc_ecs_host)
+    res = client.search({body: query, index: "esmapping", type:"ESUserVisitPage" })
+    if res && res["aggregations"] && res["aggregations"]["stat_user"] && res["aggregations"]["stat_user"]["buckets"] && res["aggregations"]["stat_user"]["buckets"].class == Array
+      return res["aggregations"]["stat_user"]["buckets"].select{|x| x.doc_count > 0}.size
+    else
+      return 0
+    end 
   end
 
   def login_days(user_id, time_begin, time_end)

@@ -19,7 +19,7 @@ module LogStash::PluginMixins::ShenmaSql
     "    
   end
 
-  def mulit_buy_sql(buyer_userid, customer_userids, time_end, time_begin)
+  def mulit_buy_sql(buyer_userids, customer_userids, time_end, time_begin)
     "SELECT
       `data`.`CustomerId` ,
       `data`.`mulit_buy_number`,
@@ -49,7 +49,7 @@ module LogStash::PluginMixins::ShenmaSql
             )
           )
         AND (
-          `income`.`AssociateUserId` = '#{buyer_userid}'
+          `income`.`AssociateUserId` in (#{buyer_userids.class == Array ? buyer_userids.join(',') : buyer_userid })
         )
         GROUP BY
           `orders`.`CustomerId`
