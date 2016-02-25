@@ -148,26 +148,30 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
         buyers = @database["select * from ims_associate where StoreId = #{row['store_id']} and `Status` = 1", {}].to_a
         buyer_userids = buyers.map{|x| x[:userid]}
-        row["login_buyers"] = login_buyers(buyer_userids, time_begin, time_end)
+        if buyers.size > 0
+          row["login_buyers"] = login_buyers(buyer_userids, time_begin, time_end)
 
-        row["add_customers"]  = @database["select * from customer_manage where OwnerUserId in ( #{buyer_userids.join(',')} ) and `Status` = 1 and CreateDate >= '#{time_begin}' and CreateDate < '#{time_end}' ", {}].to_a.size
+          row["add_customers"]  = @database["select * from customer_manage where OwnerUserId in ( #{buyer_userids.join(',')} ) and `Status` = 1 and CreateDate >= '#{time_begin}' and CreateDate < '#{time_end}' ", {}].to_a.size
 
-        sql = "SELECT DISTINCT `order`.customerid as customerid FROM `order` 
-          JOIN ims_associateincomehistory ON `order`.OrderNo = ims_associateincomehistory.SourceNo
-          WHERE
-            ims_associateincomehistory.AssociateUserId IN (#{buyer_userids.join(',')})
-          AND `order`. STATUS > 0
-          AND `order`.CreateDate >= '#{time_begin}'
-          AND `order`.CreateDate < '#{time_end}'"
-        @logger.error("sqlsql \r\n#{sql}\r\n")
+          sql = "SELECT DISTINCT `order`.customerid as customerid FROM `order` 
+            JOIN ims_associateincomehistory ON `order`.OrderNo = ims_associateincomehistory.SourceNo
+            WHERE
+              ims_associateincomehistory.AssociateUserId IN (#{buyer_userids.join(',')})
+            AND `order`. STATUS > 0
+            AND `order`.CreateDate >= '#{time_begin}'
+            AND `order`.CreateDate < '#{time_end}'"
+          @logger.error("sqlsql \r\n#{sql}\r\n")
 
-        customerids = @database[sql, {}].to_a.map{|x| x[:customerids]}
+          customerids = @database[sql, {}].to_a.map{|x| x[:customerids]}
 
-        row["customer_total_amount"] = customerids.size
+          row["customer_total_amount"] = customerids.size
 
-        all_mulit_buy_customerids = all_orders.select{|x| buyer_userids.include?(x[:associateuserid]) && x[:order_number] > 1 }.map{|x| x[:customerid]} & customerids
+          all_mulit_buy_customerids = all_orders.select{|x| buyer_userids.include?(x[:associateuserid]) && x[:order_number] > 1 }.map{|x| x[:customerid]} & customerids
 
-        row["mulit_buy_number"] = all_mulit_buy_customerids.size
+          row["mulit_buy_number"] = all_mulit_buy_customerids.size
+        else
+          
+        end
 
 
         row["time_begin"] = Date.parse(time_begin).to_s
