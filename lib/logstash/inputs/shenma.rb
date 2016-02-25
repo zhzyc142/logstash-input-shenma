@@ -169,7 +169,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
         row["time_begin"] = Date.parse(time_begin).to_s
         row["time_end"] = Date.parse(time_end).to_s
-
+        @logger.error("call back row action \r\n#{row}\r\n")
         event = LogStash::Event.new(translate_name(row, "store_data"))
         decorate(event)
         queue << event
