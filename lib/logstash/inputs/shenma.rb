@@ -115,7 +115,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
   def execute_query(queue)
     @logger.error("execute_query action #{@jdbc_task_name}")
-    @logger.error("execute_query action #{@jdbc_task_name == 'store_everyweek_data'}")
+    @logger.error("execute_query action #{@jdbc_task_name == 'section_everyweek_data'}")
     
     if @jdbc_task_name == "buyer_everyday_data"
       execute_query_buyer_everyday_data(queue)
@@ -123,6 +123,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
       execute_query_buyer_everyweek_data(queue)
     elsif @jdbc_task_name == "store_everyweek_data"
       execute_query_store_data(queue)  
+    elsif @jdbc_task_name == "section_everyweek_data"
+      execute_query_section_data(queue)  
     end
   end
 
@@ -139,6 +141,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     all_orders = @database["select income.AssociateUserId, o.CustomerId, count(1) as order_number from `order` o join ims_associateincomehistory income on o.OrderNo = income.SourceNo where o.`Status` > 0 and o.CreateDate < '#{time_end}' group by o.CustomerId, income.AssociateUserId", {}].to_a
     @logger.error("all_orders \r\n#{all_orders}\r\n")
     execute_statement(section_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
+      @logger.error("row callback \r\n#{row}\r\n")
       if(row["section_id"] && row["section_id"]!=0)
         buyers = @database["select * from ims_associate where sectionId = #{row['section_id']} and `Status` = 1", {}].to_a
         buyer_userids = buyers.map{|x| x[:userid]}
