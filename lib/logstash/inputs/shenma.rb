@@ -158,11 +158,11 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
             ims_associateincomehistory.AssociateUserId IN (#{buyer_userids.join(',')})
           AND `order`. STATUS > 0
           AND `order`.CreateDate >= '#{time_begin}'
-          AND `order`.CreateDate < '#{time_end}'", {}].to_a
+          AND `order`.CreateDate < '#{time_end}'", {}].to_a.map{|x| x["customerids"]}
 
         row["customer_total_amount"] = customerids.size
 
-        all_mulit_buy_customerids = all_orders.select{|x| buyer_userids.include?(x[:associateuserid]) && x[:order_number] > 1 }.map{|x| x[:customerid]}
+        all_mulit_buy_customerids = all_orders.select{|x| buyer_userids.include?(x[:associateuserid]) && x[:order_number] > 1 }.map{|x| x[:customerid]} & customerids
 
         row["mulit_buy_number"] = all_mulit_buy_customerids.size
 
