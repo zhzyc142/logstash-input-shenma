@@ -8,7 +8,7 @@ module LogStash::PluginMixins::ShenmaSql
       store.`Name` as store_name,
       COUNT(distinct section.id) as section_count,
       count(distinct buyer.Id) as buyer_count,
-      COUNT(DISTINCT favorite.Id) as favorite_count,
+      COUNT(DISTINCT favorite.Id) as favorite_count
     FROM
       store
     JOIN section ON store.id = section.StoreId
