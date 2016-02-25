@@ -1,6 +1,24 @@
 module LogStash::PluginMixins::ShenmaSql
   public 
 
+  def store_sql(time_begin, time_end)
+    "
+    SELECT
+      store.id as store_id,
+      store.`Name` as store_name,
+      COUNT(distinct section.id) as section_count,
+      count(distinct buyer.Id) as buyer_count,
+      COUNT(DISTINCT favorite.Id) as favorite_count,
+    FROM
+      store
+    JOIN section ON store.id = section.StoreId
+    JOIN ims_associate buyer ON store.Id = buyer.StoreId
+    left join favorite on favorite.FavoriteSourceId = buyer.Id and FavoriteSourceType = 7 and favorite.`Status` = 1 and favorite.CreatedDate >= '#{time_begin}' and favorite.CreatedDate < '#{time_end}'
+    GROUP BY
+      store.Id
+    "    
+  end
+
   def mulit_buy_sql(buyer_userid, customer_userids, time_end, time_begin)
     "SELECT
       `data`.`CustomerId` ,

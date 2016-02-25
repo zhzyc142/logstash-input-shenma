@@ -8,10 +8,10 @@ zh:
     orderrecivedamount: 实收金额
     receivedMessage: 收到消息数
     sendMessage: 发送消息数
-    sectioncode: 门店编码
-    sectionname: 门店名称
-    storeid: 专柜编号
-    storename: 专柜名称
+    sectioncode: 专柜编码
+    sectionname: 专柜名称
+    storeid: 门店编号
+    storename: 门店名称
     time_begin: 统计起始时间
     time_end: 统计结束时间
     userid: 用户id
@@ -24,10 +24,10 @@ zh:
     orderrecivedamount: 实收金额
     receivedMessage: 收到消息数
     sendMessage: 发送消息数
-    sectioncode: 门店编码
-    sectionname: 门店名称
-    storeid: 专柜编号
-    storename: 专柜名称
+    sectioncode: 专柜编码
+    sectionname: 专柜名称
+    storeid: 门店编号
+    storename: 门店名称
     time_begin: 统计起始时间
     time_end: 统计结束时间
     userid: 用户id
@@ -40,3 +40,10 @@ zh:
     mulit_buy_total_amount: 二次成交顾客成交金额
     customer_total_amount: 成交顾客数
     new_customer_total_amount: 新增粉丝成交顾客数
+  store_data:
+    time_begin: 统计起始时间
+    time_end: 统计结束时间
+    store_name: 门店
+    section_count: 专柜数
+    buyer_count: 买手数
+    favorite_count: 新增粉丝数

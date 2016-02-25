@@ -119,9 +119,31 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     
     if @jdbc_task_name == "buyer_everyday_data"
       execute_query_buyer_everyday_data(queue)
-    elsif @jdbc_task_name == "buyer_everyweek_data"
+    elsif @jdbc_task_name == "buyer_everyweek_data" || @jdbc_task_name == "buyer_everymonth_data"
       execute_query_buyer_everyweek_data(queue)
+    elsif @jdbc_task_name == "store_data"
+      execute_query_store_data(queue)  
     end
+  end
+
+  def execute_query_store_data(queue)
+    @parameters['sql_last_value'] = @sql_last_value
+    time_end =@time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    if @date_interval == 'week'
+      time_begin =  (Date.parse(time_end)-7).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    elsif @date_interval == 'month'
+      time_begin =  (Date.parse(time_end) << 1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    else
+      time_begin =  (Date.parse(time_end)-1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
+    end
+    execute_statement(buyer_everyweek_data_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
+      if(row["store_id"] && row["store_id"]!=0)
+        event = LogStash::Event.new(translate_name(row, "store_data"))
+        decorate(event)
+        queue << event
+      end
+    end
+
   end
 
   #每周买手数据
