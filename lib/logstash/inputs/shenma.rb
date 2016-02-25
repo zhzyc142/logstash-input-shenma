@@ -139,8 +139,10 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
 
     all_orders = @database["select income.AssociateUserId, o.CustomerId, count(1) as order_number from `order` o join ims_associateincomehistory income on o.OrderNo = income.SourceNo where o.`Status` > 0 and o.CreateDate < '#{time_end}' group by o.CustomerId, income.AssociateUserId", {}].to_a
-
+    @logger.error("all_orders \r\n#{all_orders}\r\n")
     execute_statement(store_sql(Date.parse(time_begin).to_s, Date.parse(time_end).to_s), @parameters) do |row|
+      @logger.error("call back row action \r\n#{row}\r\n")
+
       if(row["store_id"] && row["store_id"]!=0)
         
 
