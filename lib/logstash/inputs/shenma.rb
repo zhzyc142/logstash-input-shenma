@@ -152,13 +152,16 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
 
         row["add_customers"]  = @database["select * from customer_manage where OwnerUserId in ( #{buyer_userids.join(',')} ) and `Status` = 1 and CreateDate >= '#{time_begin}' and CreateDate < '#{time_end}' ", {}].to_a.size
 
-        customerids = @database["SELECT DISTINCT `order`.customerid as customerid FROM `order` 
+        sql = "SELECT DISTINCT `order`.customerid as customerid FROM `order` 
           JOIN ims_associateincomehistory ON `order`.OrderNo = ims_associateincomehistory.SourceNo
           WHERE
             ims_associateincomehistory.AssociateUserId IN (#{buyer_userids.join(',')})
           AND `order`. STATUS > 0
           AND `order`.CreateDate >= '#{time_begin}'
-          AND `order`.CreateDate < '#{time_end}'", {}].to_a.map{|x| x["customerids"]}
+          AND `order`.CreateDate < '#{time_end}'"
+        @logger.error("sqlsql \r\n#{sql}\r\n")
+
+        customerids = @database[sql, {}].to_a.map{|x| x[:customerids]}
 
         row["customer_total_amount"] = customerids.size
 
