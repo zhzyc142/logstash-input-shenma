@@ -307,7 +307,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "fromUserId"=> user_id.to_i ).to_a.size
   end
 
-  def login_buyers(userids, time_begin, time_end)
+  def login_buyers(user_ids, time_begin, time_end)
     query={
       "size"=> 0, 
       "query"=> {
