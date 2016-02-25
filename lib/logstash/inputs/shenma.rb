@@ -121,7 +121,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
       execute_query_buyer_everyday_data(queue)
     elsif @jdbc_task_name == "buyer_everyweek_data" || @jdbc_task_name == "buyer_everymonth_data"
       execute_query_buyer_everyweek_data(queue)
-    elsif @jdbc_task_name == "store_data"
+    elsif @jdbc_task_name == "store_everyweek_data"
       execute_query_store_data(queue)  
     end
   end
