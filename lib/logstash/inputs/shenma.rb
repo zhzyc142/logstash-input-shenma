@@ -355,7 +355,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   def buyer_private_message_customer_number(user_id, orders, day = 2)
     res = 0
     orders.each do |order|
-      @logger.error("order_ createdate action #{order[:createdate]} *******************\r\n #{all_mulit_buy_customerids}")
+      @logger.error("order_ createdate action #{order[:createdate]} *******************\r\n")
       res += @mongo_conn[:messages].find( "creationDate" => {'$gt'=> Time.parse(order[:createdate]).utc, '$lt' => (Time.parse(order[:createdate]) + (2 * 24 * 3600)).utc }, "fromUserId"=> user_id.to_i, "messageType" => 0, toUserId: order[:customerid] ).to_a.size > 0 ?  1 : 0 
     end
     return res
