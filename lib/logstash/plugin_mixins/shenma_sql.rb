@@ -61,7 +61,7 @@ module LogStash::PluginMixins::ShenmaSql
             )
           )
         AND (
-          `income`.`AssociateUserId` in (#{buyer_userids.class == Array ? buyer_userids.join(',') : buyer_userid })
+          `income`.`AssociateUserId` in (#{buyer_userids.class == Array ? buyer_userids.join(',') : buyer_userids })
         )
         GROUP BY
           `orders`.`CustomerId`
