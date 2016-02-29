@@ -356,7 +356,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
     res = 0
     @logger.error("order_all createdate action #{orders} *******************\r\n")
     orders.each do |order|
-      res += @mongo_conn[:messages].find( "creationDate" => {'$gt'=> Time.parse(order[:createdate]).utc, '$lt' => (Time.parse(order[:createdate]) + (2 * 24 * 3600)).utc }, "fromUserId"=> user_id.to_i, "messageType" => 0, toUserId: order[:customerid] ).to_a.size > 0 ?  1 : 0 
+      res += @mongo_conn[:messages].find( "creationDate" => {'$gt'=> order[:createdate].to_time.utc, '$lt' => (order[:createdate].to_time + (2 * 24 * 3600)).utc }, "fromUserId"=> user_id.to_i, "messageType" => 0, toUserId: order[:customerid] ).to_a.size > 0 ?  1 : 0 
     end
     return res
   end
