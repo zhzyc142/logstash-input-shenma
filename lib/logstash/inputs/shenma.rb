@@ -247,7 +247,8 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
   def execute_query_buyer_everyweek_data(queue)
     @parameters['sql_last_value'] = @sql_last_value
     time_end =@time_end || Date.today().to_time.strftime("%Y-%m-%dT%H:%M:%S")
-    if @date_interval == 'week'
+    if @date_interval == 'week' #周三 导出上一周的数据
+      time_end =@time_end || (Date.today()-2).to_time.strftime("%Y-%m-%dT%H:%M:%S")
       time_begin =  (Date.parse(time_end)-7).to_time.strftime("%Y-%m-%dT%H:%M:%S")
     elsif @date_interval == 'month'
       time_begin =  (Date.parse(time_end) << 1).to_time.strftime("%Y-%m-%dT%H:%M:%S")
@@ -275,7 +276,7 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
         row["receivedMessage"] = buyer_received_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
         row["private_message_number"] = buyer_private_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
         row["group_message_number"] = buyer_group_message_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
-        row["private_message_customer_number"] = buyer_private_message_customer_number(row["userid"], Time.parse(time_begin).utc,  Time.parse(time_end).utc)
+        row["private_message_customer_number"] = buyer_private_message_customer_number(row["userid"], all_orders.select{|x| x[:associateuserid] == row["userid"]}, 2)
         row["time_begin"] = Date.parse(time_begin).to_s
         row["time_end"] = Date.parse(time_end).to_s
         row["orderamount"] = row["orderamount"].to_f
@@ -351,8 +352,12 @@ class LogStash::Inputs::Shenma < LogStash::Inputs::Base
      @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end},  "messageType" => 0, "fromUserId" => {"$in" => buyer_userids} ).to_a.group_by{|x| x["fromUserId"]}.size
   end
 
-  def buyer_private_message_customer_number(user_id, time_begin, time_end)
-    @mongo_conn[:messages].find( "creationDate" => {'$gt'=> time_begin, '$lt' => time_end}, "toUserId"=> user_id.to_i, "messageType" => 0 ).group_by{|m| m["fromUserId"]}.size
+  def buyer_private_message_customer_number(user_id, orders, day = 2)
+    res = 0
+    orders.each do |order|
+      res += @mongo_conn[:messages].find( "creationDate" => {'$gt'=> Time.parse(order[:createdate]).utc, '$lt' => (Time.parse(order[:createdate]) + (2 * 24 * 3600)).utc }, "fromUserId"=> user_id.to_i, "messageType" => 0, toUserId: order[:customerid] ).to_a.size > 0 ?  1 : 0 
+    end
+    return res
   end
 
   def buyer_private_message_number(user_id, time_begin, time_end)
